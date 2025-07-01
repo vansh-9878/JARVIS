@@ -5,12 +5,14 @@ from langchain_google_genai import ChatGoogleGenerativeAI
 from langchain_core.tools import tool
 from langgraph.prebuilt import ToolNode
 from langgraph.graph.message import add_messages
+import speech_recognition as sr
 from tools.application import openApp,closeApp,take_screenshot
 from tools.search import speed_test,open_website,searchQuery
 from tools.songs import play_youtube,pause_youtube
 from tools.wordFile import storeFile
 from tools.findFile import openFile
 import os
+import pyttsx3
 from dotenv import load_dotenv
 load_dotenv()
 
@@ -27,23 +29,56 @@ model=ChatGoogleGenerativeAI(
 ).bind_tools(tools)
 
 
+engine = pyttsx3.init()
+
+def speak(text):
+    engine.say(text)
+    engine.runAndWait()
+
+
+def voiceInput()->str:
+    rec=sr.Recognizer()
+    with sr.Microphone() as source:
+        print("Listening...")
+        audio=rec.listen(source)
+    try:
+        query = rec.recognize_google(audio)
+        return query
+    except sr.UnknownValueError:
+        print("😕 Sorry, I didn't catch that.")
+        return ""
+    except sr.RequestError:
+        print("❌ Could not request results.")
+        return ""
+
+
 def agent(state: AgentState)-> AgentState:
+    # inp=input("\nUser : ")
+    inp=""
+    while(inp==""):
+        inp=voiceInput()
+    print(f"\nUser: {inp}")
+    state["messages"]=state["messages"]+[inp]
     print("Thinking..")
     prompt=SystemMessage("""You are an AI assistant that answers to users query while also using the tools whenever required
                          - Use tools whenever required
                          - If no tool solves the problem , use your intelligence to answer it
                          - if you have to give a file path follow this format : D:/{file name}
-                         - after the tool returns a success or failure message, craft a message based on it or if you want to try any other tool then do that
+                         - always reply with a message stating whether the tool was successful or not
+                         - whenever the user says thank you or bye as a closing statement, return 'Bye!'
     """)
     
     response=model.invoke([prompt]+state["messages"])
+    print(f"\nAI : {response.content}")
+    speak(response.content)
     return {"messages":[response]}
 
 def shouldContinue(state: AgentState)-> AgentState:
     print("Checking..")
     messages=state["messages"]
     last_message=messages[-1]
-    if not last_message.tool_calls:
+    print(last_message.content)
+    if "bye" in last_message.content.lower() or "thank you" in last_message.content.lower():
         return "end"
     else:
         return "continue"
@@ -66,15 +101,14 @@ graph.add_conditional_edges(
 app=graph.compile()
 
 def getAgent(inputs):
-    results=app.invoke(inputs)
-    print("-"*100)
-    print(results["messages"][-1])
+    app.invoke(inputs)
     print("-"*100)
     
+getAgent({"messages":[]})
 # input="play sapphire"
-input="open spotify"
+# input="open spotify"
 # input="open a file train which is in pdf format"
 # input="create a word file and write a report about the lastest ai trends in the past week in 500 words"
 
-getAgent({"messages":input})
+# print(voiceInput())
 
