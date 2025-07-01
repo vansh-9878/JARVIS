@@ -4,6 +4,7 @@ from langchain_core.tools import tool
 @tool
 def openApp(app:str)->str:
     """Opens any application installed in the local machine"""
+    print(f"Opening local app {app}")
     try:
         os.startfile(app)
         print("opening app!")
