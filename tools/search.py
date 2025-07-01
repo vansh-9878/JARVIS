@@ -1,6 +1,7 @@
 import webbrowser
 from langchain_core.tools import tool
 
+
 @tool
 def open_website(url:str)->str:
     """opens any website, url should be provided as parameter in https format"""
