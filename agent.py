@@ -5,14 +5,12 @@ from langchain_google_genai import ChatGoogleGenerativeAI
 from langchain_core.tools import tool
 from langgraph.prebuilt import ToolNode
 from langgraph.graph.message import add_messages
-import speech_recognition as sr
 from tools.application import openApp,closeApp,take_screenshot
 from tools.search import speed_test,open_website,searchQuery
 from tools.songs import play_youtube,pause_youtube
 from tools.wordFile import storeFile
-from tools.findFile import openFile
+from tools.findFile import openFile,openProject
 import os
-import pyttsx3
 from dotenv import load_dotenv
 load_dotenv()
 
@@ -20,7 +18,7 @@ load_dotenv()
 class AgentState(TypedDict):
     messages: Annotated[Sequence[BaseMessage],add_messages]
 
-tools=[open_website,searchQuery,speed_test,openApp,closeApp,take_screenshot,play_youtube,pause_youtube,storeFile,openFile]
+tools=[open_website,searchQuery,speed_test,openApp,closeApp,take_screenshot,play_youtube,pause_youtube,storeFile,openFile,openProject]
 
 model=ChatGoogleGenerativeAI(
     model="gemini-1.5-pro",
@@ -29,36 +27,9 @@ model=ChatGoogleGenerativeAI(
 ).bind_tools(tools)
 
 
-engine = pyttsx3.init()
-
-def speak(text):
-    engine.say(text)
-    engine.runAndWait()
-
-
-def voiceInput()->str:
-    rec=sr.Recognizer()
-    with sr.Microphone() as source:
-        print("Listening...")
-        audio=rec.listen(source)
-    try:
-        query = rec.recognize_google(audio)
-        return query
-    except sr.UnknownValueError:
-        print("😕 Sorry, I didn't catch that.")
-        return ""
-    except sr.RequestError:
-        print("❌ Could not request results.")
-        return ""
-
 
 def agent(state: AgentState)-> AgentState:
     # inp=input("\nUser : ")
-    inp=""
-    while(inp==""):
-        inp=voiceInput()
-    print(f"\nUser: {inp}")
-    state["messages"]=state["messages"]+[inp]
     print("Thinking..")
     prompt=SystemMessage("""You are an AI assistant that answers to users query while also using the tools whenever required
                          - Use tools whenever required
@@ -69,16 +40,15 @@ def agent(state: AgentState)-> AgentState:
     """)
     
     response=model.invoke([prompt]+state["messages"])
-    print(f"\nAI : {response.content}")
-    speak(response.content)
+    # print(response.content)
     return {"messages":[response]}
 
 def shouldContinue(state: AgentState)-> AgentState:
     print("Checking..")
     messages=state["messages"]
     last_message=messages[-1]
-    print(last_message.content)
-    if "bye" in last_message.content.lower() or "thank you" in last_message.content.lower():
+    # print(last_message.tools_message)
+    if not last_message.tool_calls:
         return "end"
     else:
         return "continue"
@@ -101,14 +71,16 @@ graph.add_conditional_edges(
 app=graph.compile()
 
 def getAgent(inputs):
-    app.invoke(inputs)
+    inp={"messages":[HumanMessage(content=inputs)]}
+    results=app.invoke(inp)
     print("-"*100)
+    return results
     
-getAgent({"messages":[]})
 # input="play sapphire"
 # input="open spotify"
 # input="open a file train which is in pdf format"
+input="open my datachatbot project"
 # input="create a word file and write a report about the lastest ai trends in the past week in 500 words"
 
 # print(voiceInput())
-
+# print(getAgent("what can you do")["messages"][-1].content)
