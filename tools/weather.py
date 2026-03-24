@@ -13,7 +13,7 @@ nlp = spacy.load("en_core_web_sm")
 def extract_city(command:str)->str:
     doc = nlp(command)
     for ent in doc.ents:
-        if ent.label == "GPE":
+        if ent.label_ == "GPE":
             return ent.text
     return None
 
