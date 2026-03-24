@@ -15,7 +15,7 @@ def generateContent(user_query):
     systemMessage="You are an AI assistant that generates essays and reports on a given topic, the content should be professional and in paragraphs only"
     messages = [{"role": "user", "content": systemMessage},{"role": "user", "content": user_query}]
     response = client.chat.completions.create(
-        model="gemini-1.5-pro",
+        model="gemini-2.5-flash-lite",
         messages=messages
         )
     return response.choices[0].message.content

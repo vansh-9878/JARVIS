@@ -2,29 +2,28 @@ import os,subprocess
 import fnmatch
 import difflib
 from langchain_core.tools import tool
+from rapidfuzz import fuzz
 
 def search_files(search_query, search_path="D:\\"):
-    matches = []
+    print(f"Searching for '{search_query}' in {search_path}...")
+    scored_matches = []
+
     for root, dirs, files in os.walk(search_path):
         for filename in files:
-            if fnmatch.fnmatch(filename.lower(), f"*{search_query.lower()}*"):
+            score = fuzz.partial_ratio(search_query.lower(), filename.lower())
+            if score >= 80:
                 full_path = os.path.join(root, filename)
-                matches.append(full_path)
+                scored_matches.append((full_path, score))
+                print(f"  Match ({score}%): {full_path}")
 
-    if not matches:
+    if not scored_matches:
+        print("No matches found above 80% threshold.")
         return None
 
-    filenames = [os.path.basename(path) for path in matches]
-    best_match = difflib.get_close_matches(search_query, filenames, n=1, cutoff=0.4)
-    
-    if best_match:
-        for path in matches:
-            if best_match[0] == os.path.basename(path):
-                return path
-    else:
-        return matches[0]  
-
-    return None
+    scored_matches.sort(key=lambda x: x[1], reverse=True)
+    best_path, best_score = scored_matches[0]
+    print(f"\nBest match ({best_score}%): {best_path}")
+    return best_path
 
 @tool
 def openFile(fileName):
@@ -61,3 +60,5 @@ def openProject(folderName):
                     return f"❌ Failed to open VS Code: {str(e)}"
                 
     return "Could not find the project you were looking for"
+
+# openFile("conservation economics.pdf")

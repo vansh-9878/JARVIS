@@ -21,12 +21,10 @@ class AgentState(TypedDict):
 tools=[open_website,searchQuery,speed_test,openApp,closeApp,take_screenshot,play_youtube,pause_youtube,storeFile,openFile,openProject]
 
 model=ChatGoogleGenerativeAI(
-    model="gemini-1.5-pro",
+    model="gemini-2.5-flash-lite",
     google_api_key=os.getenv("GEMINI_API"),
     temperature=0.2
 ).bind_tools(tools)
-
-
 
 def agent(state: AgentState)-> AgentState:
     # inp=input("\nUser : ")
@@ -37,6 +35,7 @@ def agent(state: AgentState)-> AgentState:
                          - if you have to give a file path follow this format : D:/{file name}
                          - always reply with a message stating whether the tool was successful or not
                          - whenever the user says thank you or bye as a closing statement, return 'Bye!'
+                         - whenever an error occurs while using a tool, catch the error and reply with a message stating that the tool could not be used
     """)
     
     response=model.invoke([prompt]+state["messages"])
