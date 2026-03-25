@@ -37,6 +37,14 @@ GEMINI_KEYS = [
     os.getenv("GEMINI_API13"),
     os.getenv("GEMINI_API14"),
     os.getenv("GEMINI_API15"),
+    os.getenv("GEMINI_API16"),
+    os.getenv("GEMINI_API17"),
+    os.getenv("GEMINI_API18"),
+    os.getenv("GEMINI_API19"),
+    os.getenv("GEMINI_API20"),
+    os.getenv("GEMINI_API21"),
+    os.getenv("GEMINI_API22"),
+    os.getenv("GEMINI_API23"),
 ]
 
 current_key_index = 0
