@@ -25,7 +25,7 @@ tools=[open_website,searchQuery,speed_test,openApp,closeApp,take_screenshot,play
 
 model=ChatGoogleGenerativeAI(
     model="gemini-2.5-flash-lite",
-    google_api_key=os.getenv("GEMINI_API1"),
+    google_api_key=os.getenv("GEMINI_API3"),
     temperature=0.2
 ).bind_tools(tools)
 

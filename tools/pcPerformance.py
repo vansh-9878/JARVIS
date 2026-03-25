@@ -4,11 +4,12 @@ from langchain_core.tools import tool
 @tool
 def monitor_system()->dict:
     """This tool analyses the performance of the pc (cpu, memory, disk usage)"""
-
+    print("Analyzing system performance...")
     cpu_percent = psutil.cpu_percent(interval=1.0)
-
+    print(f"CPU Usage: {cpu_percent}%")
     memory = psutil.virtual_memory()
-
+    
+    print(f"Memory Usage: {memory.percent}%")
     disk = psutil.disk_usage('/')
 
     processes_count = len(list(psutil.process_iter()))
@@ -34,6 +35,6 @@ def monitor_system()->dict:
     return system_data
 
 
-# if __name__ == "__main__":
-#     res = monitor_system.invoke({})
-#     print(res)
+if __name__ == "__main__":
+    res = monitor_system.invoke({})
+    print(res)
