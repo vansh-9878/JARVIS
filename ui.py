@@ -12,8 +12,8 @@ from voice import speak
 
 load_dotenv()
 
-WAKE_WORDS = ["hey assistant", "ok siri", "hi jarvis", "lucy","abhinav","hello","yo","agent","elon","leon"]
-
+WAKE_WORDS = ["lucy","abhinav","agent"]
+EXIT_WORDS = ["exit", "stop", "sleep", "goodbye"]
 
 BG_DARK    = "#0d0f14"
 BG_PANEL   = "#13161d"
@@ -46,6 +46,7 @@ class AssistantApp:
         self.wake_thread     = None
         self.dot_count       = 0
         self.dot_timer       = None
+        self.conversation_mode = False
 
         self._load_fonts()
         self._build_ui()
@@ -376,12 +377,15 @@ class AssistantApp:
         rec.energy_threshold = 300
         rec.dynamic_energy_threshold = True
         while self.wake_listening:
+            if self.conversation_mode:
+                time.sleep(1)
+                continue
             try:
                 with sr.Microphone() as source:
                     audio = rec.listen(source, timeout=3, phrase_time_limit=4)
                 try:
                     heard = rec.recognize_google(audio).lower()
-                    if any(w in heard for w in WAKE_WORDS):
+                    if any(w in heard for w in WAKE_WORDS) and not self.conversation_mode:
                         self.msg_queue.put(("wake_triggered", heard))
                 except sr.UnknownValueError:
                     pass
@@ -413,16 +417,31 @@ class AssistantApp:
         self.root.after(80, self._poll_queue)
 
     def _on_wake(self, heard: str):
-        self.root.deiconify()
+
+        if self.conversation_mode:
+            return
+        if not self.root.winfo_viewable():
+            self.root.deiconify()
         self.root.lift()
         self.root.attributes("-topmost", True)
         self.root.after(300, lambda: self.root.attributes("-topmost", False))
-        self._add_system_message(f'🔔  Wake word detected: "{heard}"')
-        self._set_status("🎙  Wake word heard — recording…", WARN, WARN)
-        if not self.is_listening and not self.is_processing:
-            self.voice_btn.configure(bg=DANGER, text="⏹  Recording")
-            threading.Thread(target=self._do_voice_query,
-                             daemon=True).start()
+        self._add_system_message(f'🔔 Wake word detected: "{heard}"')
+        self.conversation_mode = True
+        self._set_status("🎙 Conversation mode active", WARN, WARN)
+        threading.Thread(target=self._conversation_loop, daemon=True).start()
+
+    def _conversation_loop(self):
+        while self.conversation_mode:
+            query = self._record_voice()
+            if not query:
+                continue
+            q = query.lower()
+            if any(word in q for word in EXIT_WORDS):
+                self.conversation_mode = False
+                self.msg_queue.put(("sys_msg", "👋 Conversation ended. Say wake word again."))
+                self.msg_queue.put(("status", ("Idle  •  Waiting for wake word", TEXT_SEC, SUCCESS)))
+                break
+            self._run_agent(query)
 
     def run(self):
         self.root.mainloop()

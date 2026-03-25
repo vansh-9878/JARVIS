@@ -4,6 +4,7 @@ from langchain_core.tools import tool
 @tool
 def openApp(app:str)->str:
     """Opens any application installed in the local machine"""
+    app = app.lower()
     print(f"Opening local app {app}")
     try:
         os.startfile(app)
@@ -16,6 +17,7 @@ def openApp(app:str)->str:
 @tool
 def closeApp(app_name:str)->str:
     """Used to close any application on the local machine"""
+    app_name = app_name.lower()
     try:
         os.system(f"taskkill /f /im {app_name}.exe")
         return "closed successfully"
@@ -26,7 +28,7 @@ def closeApp(app_name:str)->str:
 def take_screenshot(filename:str)->str:
     """Used to take screenshot"""
     try:
-        print("helooooooooooooooooooooo")
+       
         filename = filename if filename.endswith(".jpg") else f"{filename}.jpg"
         pyautogui.hotkey('alt','tab')
         screenshot = pyautogui.screenshot()
@@ -40,5 +42,5 @@ def take_screenshot(filename:str)->str:
         return "could not take screenshot"
     
     
-# closeApp("spotify")
-take_screenshot("test.jpg")
+# # closeApp("spotify")
+# take_screenshot("test.jpg")

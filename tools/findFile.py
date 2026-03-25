@@ -4,7 +4,7 @@ from rapidfuzz import fuzz
 from dotenv import load_dotenv
 load_dotenv()
 
-def search_files(search_query, search_path="D:\\"):
+def search_files(search_query, search_path="C:\\Users\\Niall Dcunha\\Downloads"):
     print(f"Searching for '{search_query}' in {search_path}...")
     scored_matches = []
 
@@ -39,7 +39,7 @@ def normalize(name):
 def openProject(folderName):
     """Opens a folder/project on VS code and assume the folder is in a predefined base directory."""
     basePath1=os.getenv("BASE_PATH1")
-    basePath2=os.getenv("BASE_PATH2")
+    # basePath2=os.getenv("BASE_PATH2")
     for root, dirs, _ in os.walk(basePath1):
         for folder in dirs:
             if normalize(folder) == normalize(folderName):
@@ -49,15 +49,15 @@ def openProject(folderName):
                     return f"VS Code opened in: {full_path}"
                 except Exception as e:
                     return f"Failed to open VS Code: {str(e)}"
-    for root, dirs, _ in os.walk(basePath2):
-        for folder in dirs:
-            if folder.lower() == folderName.lower():
-                full_path = os.path.join(root, folder)
-                try:
-                    subprocess.Popen(["code", full_path], shell=True)
-                    return f"VS Code opened in: {full_path}"
-                except Exception as e:
-                    return f"Failed to open VS Code: {str(e)}"
+    # for root, dirs, _ in os.walk(basePath2):
+    #     for folder in dirs:
+    #         if folder.lower() == folderName.lower():
+    #             full_path = os.path.join(root, folder)
+    #             try:
+    #                 subprocess.Popen(["code", full_path], shell=True)
+    #                 return f"VS Code opened in: {full_path}"
+    #             except Exception as e:
+    #                 return f"Failed to open VS Code: {str(e)}"
                 
     return "Could not find the project you were looking for"
 

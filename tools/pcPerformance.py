@@ -35,6 +35,6 @@ def monitor_system()->dict:
     return system_data
 
 
-if __name__ == "__main__":
-    res = monitor_system.invoke({})
-    print(res)
+# if __name__ == "__main__":
+#     res = monitor_system.invoke({})
+#     print(res)

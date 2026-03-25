@@ -13,37 +13,114 @@ from tools.findFile import openFile,openProject
 from tools.weather import get_weather
 from tools.pcPerformance import monitor_system
 from tools.outlookEmail import poll_outlook, draftemail
+from tools.notificationsTask import add_to_list, delete_from_list, display_pending_tasks
+import threading
+from tools.taskNotifier import notify_tasks
+from tools.reminder_func import remind_task
 import os
 from dotenv import load_dotenv
 load_dotenv()
+
+GEMINI_KEYS = [
+    os.getenv("GEMINI_API1"),
+    os.getenv("GEMINI_API2"),
+    os.getenv("GEMINI_API3"),
+    os.getenv("GEMINI_API4"),
+    os.getenv("GEMINI_API5"),
+    os.getenv("GEMINI_API6"),
+    os.getenv("GEMINI_API7"),
+    os.getenv("GEMINI_API8"),
+    os.getenv("GEMINI_API9"),
+    os.getenv("GEMINI_API10"),
+    os.getenv("GEMINI_API11"),
+    os.getenv("GEMINI_API12"),
+    os.getenv("GEMINI_API13"),
+    os.getenv("GEMINI_API14"),
+    os.getenv("GEMINI_API15"),
+]
+
+current_key_index = 0
+
+conversation_memory = []
+
+threading.Thread(target=notify_tasks, daemon=True).start()
 
 
 class AgentState(TypedDict):
     messages: Annotated[Sequence[BaseMessage],add_messages]
 
-tools=[open_website,searchQuery,speed_test,openApp,closeApp,take_screenshot,play_youtube,pause_youtube,storeFile,openFile,openProject,get_weather,monitor_system,poll_outlook,draftemail]
+tools=[open_website,searchQuery,speed_test,openApp,closeApp,take_screenshot,play_youtube,pause_youtube,storeFile,openFile,openProject,get_weather,monitor_system,poll_outlook,draftemail, add_to_list, delete_from_list, display_pending_tasks,remind_task]
 
-model=ChatGoogleGenerativeAI(
-    model="gemini-2.5-flash-lite",
-    google_api_key=os.getenv("GEMINI_API3"),
-    temperature=0.2
-).bind_tools(tools)
+# model=ChatGoogleGenerativeAI(
+#     model="gemini-2.5-flash-lite",
+#     google_api_key=os.getenv("GEMINI_API1"),
+#     temperature=0.2
+# ).bind_tools(tools)
 
-def agent(state: AgentState)-> AgentState:
-    # inp=input("\nUser : ")
-    print("Thinking..")
-    prompt=SystemMessage("""You are an AI assistant that answers to users query while also using the tools whenever required
-                         - Use tools whenever required
-                         - If no tool solves the problem , use your intelligence to answer it
-                         - if you have to give a file path follow this format : D:/{file name}
-                         - always reply with a message stating whether the tool was successful or not
-                         - whenever the user says thank you or bye as a closing statement, return 'Bye!'
-                         - whenever an error occurs while using a tool, catch the error and reply with a message stating that the tool could not be used
-    """)
+def get_model():
+    global current_key_index
     
-    response=model.invoke([prompt]+state["messages"])
-    # print(response.content)
-    return {"messages":[response]}
+    key = GEMINI_KEYS[current_key_index]
+
+    return ChatGoogleGenerativeAI(
+        model="gemini-2.5-flash-lite",
+        google_api_key=key,
+        temperature=0.2,
+        max_retries=0
+    ).bind_tools(tools)
+
+def agent(state: AgentState) -> AgentState:
+
+    global current_key_index
+
+    print("Thinking..")
+
+    prompt = SystemMessage("""You are an AI assistant that answers to users query while also using the tools whenever required
+    - Use tools whenever required
+    - If no tool solves the problem , use your intelligence to answer it
+    - if you have to give a file path follow this format : D:/{file name}
+    - always reply with a message stating whether the tool was successful or not
+    - whenever the user says thank you or bye as a closing statement, return 'Bye!'
+    - whenever an error occurs while using a tool, catch the error and reply with a message stating that the tool could not be used
+
+    Task management tools:
+    - add_to_list(task) → add a task
+    - delete_from_list(task) → mark task completed
+    - display_pending_tasks() → show pending tasks
+
+    Reminder function:
+    - Extract the task as one argument and the time as the other argument and return the task string and only the integer time value(converted to seconds)
+    """)
+
+    num_keys = len(GEMINI_KEYS)
+
+    for _ in range(num_keys):
+
+        try:
+
+            print(f"Using API Key #{current_key_index+1}")
+
+            model = get_model()
+
+            response = model.invoke([prompt] + state["messages"])
+
+            return {"messages": [response]}
+
+        except Exception as e:
+
+            error_msg = str(e)
+
+            if "429" in error_msg or "quota" in error_msg.lower():
+                print(f"Key #{current_key_index+1} quota exhausted")
+
+            else:
+                print(f"Key #{current_key_index+1} failed:", e)
+
+            current_key_index = (current_key_index + 1) % num_keys
+
+            print(f"Switching to Key #{current_key_index+1}\n")
+
+    raise Exception("All Gemini API keys exhausted")
 
 def shouldContinue(state: AgentState)-> AgentState:
     print("Checking..")
@@ -73,8 +150,14 @@ graph.add_conditional_edges(
 app=graph.compile()
 
 def getAgent(inputs):
-    inp={"messages":[HumanMessage(content=inputs)]}
+    global conversation_memory
+    
+    conversation_memory.append(HumanMessage(content=inputs))
+    inp={"messages": conversation_memory}
     results=app.invoke(inp)
+
+    conversation_memory = results['messages']
+    conversation_memory = conversation_memory[-10:]
     print("-"*100)
     return results
     

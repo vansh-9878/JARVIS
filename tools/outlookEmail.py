@@ -40,11 +40,11 @@ def draftemail(receiveremail:str, subject:str, body:str)->str:
 
     return f"Draft email created for {receiveremail} with subject '{subject}'"
 
-if __name__ == "__main__":
-    res = draftemail.invoke({
-        "receiveremail": "venugopalcoldcoffee@gmail.com",
-        "subject": "Test Email",
-        "body": "Hello, this is a test draft created using Python."
-    })
+# if __name__ == "__main__":
+#     res = draftemail.invoke({
+#         "receiveremail": "venugopalcoldcoffee@gmail.com",
+#         "subject": "Test Email",
+#         "body": "Hello, this is a test draft created using Python."
+#     })
 
-    print(res)
+#     print(res)

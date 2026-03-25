@@ -7,7 +7,7 @@ from dotenv import load_dotenv
 
 load_dotenv()
 client = OpenAI(
-    api_key=os.getenv("GEMINI_API2"),
+    api_key=os.getenv("GEMINI_API16"),
     base_url="https://generativelanguage.googleapis.com/v1beta/openai/"
 )
 
@@ -21,7 +21,7 @@ def generateContent(user_query):
     return response.choices[0].message.content
 
 @tool
-def storeFile(user_query:str,heading:str,filePath:str)->str:
+def storeFile(user_query:str,heading:str,filePath:str="C:\\Users\\Niall Dcunha\\Downloads")->str:
     """Generates content based on the user query, stores it in a word file and then opens it"""
     content=generateContent(user_query)
     doc = Document()
