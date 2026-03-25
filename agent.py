@@ -22,11 +22,6 @@ from dotenv import load_dotenv
 load_dotenv()
 
 GEMINI_KEYS = [
-    os.getenv("GEMINI_API1"),
-    os.getenv("GEMINI_API2"),
-    os.getenv("GEMINI_API3"),
-    os.getenv("GEMINI_API4"),
-    os.getenv("GEMINI_API5"),
     os.getenv("GEMINI_API6"),
     os.getenv("GEMINI_API7"),
     os.getenv("GEMINI_API8"),
@@ -72,7 +67,7 @@ def get_model():
 
     return ChatGoogleGenerativeAI(
         model="gemini-2.5-flash-lite",
-        google_api_key=key,
+        google_api_key=os.getenv("GEMINI_API7"),
         temperature=0.2,
         max_retries=0
     ).bind_tools(tools)

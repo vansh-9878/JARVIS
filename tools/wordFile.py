@@ -7,7 +7,7 @@ from dotenv import load_dotenv
 
 load_dotenv()
 client = OpenAI(
-    api_key=os.getenv("GEMINI_API24"),
+    api_key=os.getenv("GEMINI_API23"),
     base_url="https://generativelanguage.googleapis.com/v1beta/openai/"
 )
 
@@ -26,8 +26,9 @@ def storeFile(user_query:str,heading:str,filePath:str="C:\\Users\\Niall Dcunha\\
     content=generateContent(user_query)
     doc = Document()
     doc.add_heading(heading, 0)
+    filepath=os.path.join(filePath,heading+".docx")
     doc.add_paragraph(content)
-    doc.save(filePath)
-    print(f"Report saved to {filePath}")
-    os.startfile(filePath)
-    return f"file saved at {filePath}"
+    doc.save(filepath)
+    print(f"Report saved to {filepath}")
+    os.startfile(filepath)
+    return f"file saved at {filepath}"

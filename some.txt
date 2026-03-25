@@ -1,0 +1,3 @@
+generate a word doc with the heading supervised learning and add content related to linear regression in it
+
+generate an email to vansh@gmail.com with the subject hi and body this is a test mail
