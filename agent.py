@@ -12,6 +12,7 @@ from tools.wordFile import storeFile
 from tools.findFile import openFile,openProject
 from tools.weather import get_weather
 from tools.pcPerformance import monitor_system
+from tools.outlookEmail import poll_outlook, draftemail
 import os
 from dotenv import load_dotenv
 load_dotenv()
@@ -20,11 +21,11 @@ load_dotenv()
 class AgentState(TypedDict):
     messages: Annotated[Sequence[BaseMessage],add_messages]
 
-tools=[open_website,searchQuery,speed_test,openApp,closeApp,take_screenshot,play_youtube,pause_youtube,storeFile,openFile,openProject,get_weather,monitor_system]
+tools=[open_website,searchQuery,speed_test,openApp,closeApp,take_screenshot,play_youtube,pause_youtube,storeFile,openFile,openProject,get_weather,monitor_system,poll_outlook,draftemail]
 
 model=ChatGoogleGenerativeAI(
     model="gemini-2.5-flash-lite",
-    google_api_key=os.getenv("GEMINI_API"),
+    google_api_key=os.getenv("GEMINI_API1"),
     temperature=0.2
 ).bind_tools(tools)
 

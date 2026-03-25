@@ -9,7 +9,7 @@ load_dotenv()
 weather_key = os.getenv('WEATHER_API')
 nlp = spacy.load("en_core_web_sm")
 
-@tool
+
 def extract_city(command:str)->str:
     doc = nlp(command)
     for ent in doc.ents:
@@ -17,7 +17,7 @@ def extract_city(command:str)->str:
             return ent.text
     return None
 
-@tool
+
 def weather_func(city:str)->str:
     weather_url = f"http://api.openweathermap.org/data/2.5/weather?q={city}&appid={weather_key}"
     response = requests.get(weather_url)
@@ -35,6 +35,7 @@ def weather_func(city:str)->str:
 
 @tool
 def get_weather(command:str)->str:
+    """fetches the current weather for the extracted city using the openweather api"""
     city = extract_city(command)
     print(city)
     if city:

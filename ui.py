@@ -12,7 +12,7 @@ from voice import speak
 
 load_dotenv()
 
-WAKE_WORDS = ["hey assistant", "ok siri","hi jarvis"]
+WAKE_WORDS = ["hey assistant", "ok siri", "hi jarvis", "lucy"]
 
 
 BG_DARK    = "#0d0f14"
